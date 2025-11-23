@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "ES6",          // dla przeglądarek
+    "module": "none",         // brak modułów Node
+    "outDir": "./dist",       // JS trafia do dist
+    "rootDir": "./src",       // TS bierze z src
+    "strict": true,           // pełna kontrola typów
+    "sourceMap": true         // przydatne do debugowania w Chrome
+  },
+  "include": ["src"]
+}

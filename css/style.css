@@ -1,0 +1,56 @@
+:root {
+  --field-size: min(10vw, 70px);
+  --light: #a3d2f2;
+  --dark: #05445e;
+  --highlight: #f2d694;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #e0f7fa;
+  text-align: center;
+  margin: 0;
+  padding: 20px;
+}
+
+#game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+}
+
+#board {
+  display: grid;
+  grid-template-columns: repeat(8, var(--field-size));
+  grid-template-rows: repeat(8, var(--field-size));
+  border: 4px solid #03396c;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+.square {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  user-select: none;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.square.light {
+  background: linear-gradient(to bottom right, #cce7f0, #a3d2f2);
+  box-shadow: inset 0 2px 4px rgba(255,255,255,0.3);
+}
+
+.square.dark {
+  background: linear-gradient(to bottom right, #03304e, #05445e);
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* podświetlenie ruchu */
+.square.highlight {
+  box-shadow: 0 0 0 4px var(--highlight), inset 0 2px 4px rgba(0,0,0,0.3);
+  transform: scale(1.05);
+}
