@@ -1,3 +1,6 @@
 import "./board.js";
-import "./game.js";
-import "./voice.js";
+import { initVoiceControl } from "./voice.js";
+
+window.addEventListener("DOMContentLoaded", () => {
+    initVoiceControl();
+});

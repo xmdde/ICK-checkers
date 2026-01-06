@@ -54,3 +54,22 @@ body {
   box-shadow: 0 0 0 4px var(--highlight), inset 0 2px 4px rgba(0,0,0,0.3);
   transform: scale(1.05);
 }
+
+.piece {
+  width: 80%;
+  height: 80%;
+  border-radius: 50%;
+  margin: 10%;
+  box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+  cursor: pointer;
+}
+
+.piece.white {
+  background-color: #f0f0f0;
+  border: 2px solid #ccc;
+}
+
+.piece.black {
+  background-color: #333;
+  border: 2px solid #000;
+}
