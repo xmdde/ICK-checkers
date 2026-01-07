@@ -54,6 +54,22 @@ export function initVoiceControl() {
     
     output.textContent = "Ty: " + rawTranscript;
 
+    const questions = [
+        "czyj ruch", 
+        "kto teraz", 
+        "kto ma ruch", 
+        "czyja kolej", 
+        "czyja tura",
+        "kogo ruch",
+        "kogo tura"
+    ];
+
+    if (questions.some(q => lowerTranscript.includes(q))) {
+        const player = gameState.currentPlayer === "white" ? "białych" : "czarnych";
+        speak(`Teraz jest ruch ${player}.`);
+        return;
+    }
+
     if (lowerTranscript.includes("motyw") || lowerTranscript.includes("kolor")) {
         if (lowerTranscript.includes("leśny")) { setTheme("las"); speak("Zmieniam motyw na leśny."); }
         else if (lowerTranscript.includes("ognisty")) { setTheme("ogien"); speak("Włączam motyw ognisty."); }
@@ -62,15 +78,9 @@ export function initVoiceControl() {
         return;
     }
 
-    if (lowerTranscript.includes("czyj ruch")) {
-        const player = gameState.currentPlayer === "white" ? "białych" : "czarnych";
-        speak(`Teraz jest ruch ${player}.`);
-        return;
-    }
-
     if (lowerTranscript.includes("zasady")) {
-        speak("Pionki poruszają się o jedno pole po przekątnej. Bicie jest obowiązkowe.");
-        return;
+      speak("Pionki poruszają się o jedno pole po przekątnej. Bicie jest obowiązkowe.");
+      return;
     }
 
     const move = parseMoveCommand(rawTranscript);

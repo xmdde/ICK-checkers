@@ -1,161 +1,133 @@
 :root {
-  --field-size: min(10vw, 70px);
+  --field-size: min(8vw, 60px);
   --light: #a3d2f2;
   --dark: #05445e;
   --highlight: #f2d694;
   --bg-color: #e0f7fa;
 }
 
-/* Motyw Leśny (Zielony) */
 body[data-theme="las"] {
-  --light: #c8e6c9;
-  --dark: #2e7d32;
-  --highlight: #ffd54f;
-  --bg-color: #f1f8e9;
+  --light: #c8e6c9; --dark: #2e7d32; --highlight: #ffd54f; --bg-color: #f1f8e9;
 }
-
-/* Motyw Ognisty (Czerwony) */
 body[data-theme="ogien"] {
-  --light: #ffccbc;
-  --dark: #bf360c;
-  --highlight: #ffeb3b;
-  --bg-color: #fbe9e7;
+  --light: #ffccbc; --dark: #bf360c; --highlight: #ffeb3b; --bg-color: #fbe9e7;
 }
-
-/* Motyw Kontrastowy (Czarno-Biały) */
 body[data-theme="kontrast"] {
-  --light: #ffffff;
-  --dark: #000000;
-  --highlight: #ff00ff;
-  --bg-color: #999999;
-}
-
-/* Aktualizacja tła body, żeby reagowało na motyw */
-body {
-  background: var(--bg-color);
-  transition: background 0.5s;
+  --light: #ffffff; --dark: #000000; --highlight: #00ff00; --bg-color: #555555;
 }
 
 body {
-  font-family: Arial, sans-serif;
-  background: #e0f7fa;
-  text-align: center;
   margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-color);
+  transition: background-color 0.5s ease;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+#game-layout {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  max-width: 1400px;
   padding: 20px;
 }
 
-#game {
+/* --- PANELE BOCZNE --- */
+.side-panel {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+#assistant-panel, #controls {
+  background: white;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border: 2px solid var(--dark);
+  width: 220px; /* Stała szerokość paneli */
+  text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: 10px;
 }
 
-#board {
-  display: grid;
-  grid-column: 2; /* Plansza w drugiej kolumnie */
-  grid-row: 1;    /* I w pierwszym wierszu */
-  grid-template-columns: repeat(8, var(--field-size));
-  grid-template-rows: repeat(8, var(--field-size));
-  border: 4px solid #03396c;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
-}
-
-.square {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  user-select: none;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.square.light {
-  background: linear-gradient(to bottom right, #cce7f0, #a3d2f2);
-  box-shadow: inset 0 2px 4px rgba(255,255,255,0.3);
-}
-
-.square.dark {
-  background: linear-gradient(to bottom right, #03304e, #05445e);
-  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
-}
-
-/* podświetlenie ruchu */
-.square.highlight {
-  box-shadow: 0 0 0 4px var(--highlight), inset 0 2px 4px rgba(0,0,0,0.3);
-  transform: scale(1.05);
-}
-
-.piece {
-  width: 80%;
-  height: 80%;
-  border-radius: 50%;
-  margin: 10%;
-  box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
-  cursor: pointer;
-}
-
-.piece.white {
-  background-color: #f0f0f0;
-  border: 2px solid #ccc;
-}
-
-.piece.black {
-  background-color: #333;
-  border: 2px solid #000;
-}
-
-#assistant-panel {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  background: white;
-  padding: 15px 25px;
-  border-radius: 50px; /* Zaokrąglony kształt pigułki */
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
-  max-width: 90%;
-  width: 500px;
-  border: 2px solid var(--dark);
-}
-
+/* Ikonka asystenta */
 #assistant-panel .icon svg {
-  width: 32px;
-  height: 32px;
-  stroke: var(--dark);
-  fill: var(--light);
-}
-
-#assistant-panel .text-content {
-  text-align: left;
-}
-
-#assistant-label {
-  display: block;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  color: #888;
-  font-weight: bold;
+  width: 50px; height: 50px;
+  stroke: var(--dark); fill: var(--light);
+  transition: stroke 0.3s, fill 0.3s;
 }
 
 #assistant-text {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: var(--dark);
-  min-height: 1.5em; /* Żeby nie skakało jak jest pusto */
+  font-weight: bold; font-size: 1.1em; color: var(--dark);
 }
 
-/* --- NOWE STYLE DLA WSPÓŁRZĘDNYCH --- */
+#startBtn {
+  background: var(--dark); color: white;
+  border: none; padding: 12px 24px;
+  border-radius: 50px; cursor: pointer;
+  font-size: 1rem;
+  transition: transform 0.1s, background 0.3s;
+}
+#startBtn:active { transform: scale(0.95); }
+
+.center-panel {
+  flex: 0 0 auto;
+}
+
 .board-wrapper {
   display: grid;
-  /* Kolumny: Wąski pasek na liczby | Plansza */
-  grid-template-columns: 30px auto; 
-  /* Wiersze: Plansza | Wąski pasek na litery */
-  grid-template-rows: auto 30px;    
+  grid-template-columns: 30px auto;
+  grid-template-rows: auto 30px;
   gap: 5px;
+}
+
+#board {
+  grid-column: 2; grid-row: 1;
+  display: grid;
+  grid-template-columns: repeat(8, var(--field-size));
+  grid-template-rows: repeat(8, var(--field-size));
+  border: 5px solid var(--dark);
+  border-radius: 5px;
+  background: #fff;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+}
+
+/* POLA */
+.square {
+  display: flex; align-items: center; justify-content: center;
+}
+.square.light { background-color: var(--light) !important; }
+.square.dark { background-color: var(--dark) !important; }
+
+/* PIONKI */
+.piece {
+  width: 75%; height: 75%; border-radius: 50%;
+  box-shadow: 3px 3px 8px rgba(0,0,0,0.4);
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.piece:hover { transform: scale(1.1); }
+.piece.white { background: #f0f0f0; border: 2px solid #ccc; }
+.piece.black { background: #333; border: 2px solid #000; }
+
+.coords div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 
 .coords {
@@ -165,22 +137,24 @@ body {
   font-size: 14px;
 }
 
-/* Liczby po lewej (1-8) */
-.coords.nums {
-  grid-column: 1;
-  grid-row: 1;
-  /* Siatka liczb musi pasować do wysokości kratek */
-  grid-template-rows: repeat(8, var(--field-size)); 
-  align-items: center;
-  justify-content: center;
+.coords.nums { 
+  grid-column: 1; 
+  grid-row: 1; 
+  grid-template-rows: repeat(8, var(--field-size));
 }
 
-/* Litery na dole (A-H) */
-.coords.letters {
-  grid-column: 2;
-  grid-row: 2;
-  /* Siatka liter musi pasować do szerokości kratek */
+.coords.letters { 
+  grid-column: 2; 
+  grid-row: 2; 
   grid-template-columns: repeat(8, var(--field-size));
-  align-items: center;
-  justify-content: center;
+  padding-left: 5px;
+}
+
+@media (max-width: 1000px) {
+  #game-layout {
+    flex-direction: column;
+    gap: 30px;
+  }
+  .side-panel { width: 100%; }
+  #assistant-panel, #controls { width: 90%; flex-direction: row; justify-content: space-around; }
 }

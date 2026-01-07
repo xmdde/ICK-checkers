@@ -2,39 +2,50 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Warcaby Głosowe</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
 
-<div id="game">
-  <div id="assistant-panel">
-    <div class="icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M12 8l-4.8 2.4c-.7.4-1.2 1.1-1.2 2v6.3c0 1.6 1.8 2.5 3.1 1.7L12 19V8z"></path>
-        <path d="M12 8H20.7c1.1 0 2 .9 2 2v3c0 1.1-.9 2-2 2H12"></path>
-        <path d="M10 20H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6"></path>
-      </svg>
-    </div>
-    <div class="text-content">
-      <span id="assistant-label">Asystent gry:</span>
-      <p id="assistant-text">Czekam na Twój ruch...</p>
+<div id="game-layout">
+  
+  <div class="side-panel left-panel">
+    <div id="assistant-panel">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 8l-4.8 2.4c-.7.4-1.2 1.1-1.2 2v6.3c0 1.6 1.8 2.5 3.1 1.7L12 19V8z"></path>
+          <path d="M12 8H20.7c1.1 0 2 .9 2 2v3c0 1.1-.9 2-2 2H12"></path>
+          <path d="M10 20H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h6"></path>
+        </svg>
+      </div>
+      <div class="text-content">
+        <span id="assistant-label">Asystent:</span>
+        <p id="assistant-text">Czekam na Twój ruch...</p>
+      </div>
     </div>
   </div>
 
-  <div class="board-wrapper">
-    <div id="coords-nums" class="coords nums"></div> <div id="board"></div>                           <div id="coords-letters" class="coords letters"></div> </div>
-
-  <div id="controls">
-    <div id="status">Gotowy</div>
-    <button id="startBtn">🎤 Rozpocznij nasłuchiwanie</button>
-    <p id="output">Twoje słowa pojawią się tutaj...</p>
+  <div class="center-panel">
+    <div class="board-wrapper">
+      <div id="coords-nums" class="coords nums"></div>
+      <div id="board"></div>
+      <div id="coords-letters" class="coords letters"></div>
+    </div>
   </div>
+
+  <div class="side-panel right-panel">
+    <div id="controls">
+      <div id="status">Gotowy</div>
+      <button id="startBtn">🎤 Rozpocznij</button>
+      <div class="transcript-box">
+        <small>Ty powiedziałeś:</small>
+        <p id="output">...</p>
+      </div>
+    </div>
+  </div>
+
 </div>
-
-<script type="module" src="dist/main.js"></script>
-</body>
 
 <script type="module" src="dist/main.js"></script>
 </body>
