@@ -1,6 +1,7 @@
 import { executeMove } from "./game.js";
+import { setTheme } from "./board.js";
+import { gameState } from "./game.js";
 
-// Słownik mapowania słów na cyfry
 const NUMBER_MAP: { [key: string]: string } = {
     "jeden": "1", "raz": "1",
     "dwa": "2", 
@@ -12,16 +13,27 @@ const NUMBER_MAP: { [key: string]: string } = {
     "osiem": "8"
 };
 
+function speak(text: string) {
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "pl-PL";
+  utterance.rate = 1.0;
+  window.speechSynthesis.speak(utterance);
+
+  const assistantText = document.getElementById("assistant-text");
+  if (assistantText) {
+    assistantText.textContent = text;
+    assistantText.style.opacity = "0";
+    setTimeout(() => assistantText.style.opacity = "1", 100);
+  }
+}
+
 export function initVoiceControl() {
   const startBtn = document.getElementById("startBtn") as HTMLButtonElement;
   const output = document.getElementById("output") as HTMLParagraphElement;
-
   const SpeechRecognition: any = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
-  if (!SpeechRecognition) {
-    output.textContent = "Brak obsługi Web Speech API.";
-    return;
-  }
+  if (!SpeechRecognition) return;
 
   const recognition = new SpeechRecognition();
   recognition.lang = "pl-PL";
@@ -30,29 +42,48 @@ export function initVoiceControl() {
 
   startBtn.addEventListener("click", () => {
     output.textContent = "Słucham...";
+    const assistantText = document.getElementById("assistant-text");
+    if(assistantText) assistantText.textContent = "👂 Nasłuchuję..."; 
+    
     recognition.start();
   });
 
   recognition.onresult = (event: any) => {
-    const transcript = event.results[0][0].transcript;
-    output.textContent = "Usłyszałem: " + transcript;
-
-    const move = parseMoveCommand(transcript);
+    const rawTranscript = event.results[0][0].transcript;
+    const lowerTranscript = rawTranscript.toLowerCase();
     
+    output.textContent = "Ty: " + rawTranscript;
+
+    if (lowerTranscript.includes("motyw") || lowerTranscript.includes("kolor")) {
+        if (lowerTranscript.includes("leśny")) { setTheme("las"); speak("Zmieniam motyw na leśny."); }
+        else if (lowerTranscript.includes("ognisty")) { setTheme("ogien"); speak("Włączam motyw ognisty."); }
+        else if (lowerTranscript.includes("kontrast")) { setTheme("kontrast"); speak("Włączam wysoki kontrast."); }
+        else { setTheme("domyslny"); speak("Przywracam wygląd klasyczny."); }
+        return;
+    }
+
+    if (lowerTranscript.includes("czyj ruch")) {
+        const player = gameState.currentPlayer === "white" ? "białych" : "czarnych";
+        speak(`Teraz jest ruch ${player}.`);
+        return;
+    }
+
+    if (lowerTranscript.includes("zasady")) {
+        speak("Pionki poruszają się o jedno pole po przekątnej. Bicie jest obowiązkowe.");
+        return;
+    }
+
+    const move = parseMoveCommand(rawTranscript);
     if (move) {
       const success = executeMove(move.from, move.to);
       if (success) {
-          output.textContent += ` ✅ Ruch: ${move.from} -> ${move.to}`;
+        speak(`Przesuwam z ${move.from} na ${move.to}.`);
       } else {
-          output.textContent += ` ❌ Ruch niemożliwy`;
+        speak("Ten ruch jest niemożliwy.");
       }
     } else {
-      output.textContent += " (Nie zrozumiałem ruchu)";
+      speak("Nie zrozumiałam komendy.");
     }
-  };
-
-  recognition.onerror = (event: any) => {
-    output.textContent = "Błąd: " + event.error;
   };
 }
 

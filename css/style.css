@@ -3,6 +3,37 @@
   --light: #a3d2f2;
   --dark: #05445e;
   --highlight: #f2d694;
+  --bg-color: #e0f7fa;
+}
+
+/* Motyw Leśny (Zielony) */
+body[data-theme="las"] {
+  --light: #c8e6c9;
+  --dark: #2e7d32;
+  --highlight: #ffd54f;
+  --bg-color: #f1f8e9;
+}
+
+/* Motyw Ognisty (Czerwony) */
+body[data-theme="ogien"] {
+  --light: #ffccbc;
+  --dark: #bf360c;
+  --highlight: #ffeb3b;
+  --bg-color: #fbe9e7;
+}
+
+/* Motyw Kontrastowy (Czarno-Biały) */
+body[data-theme="kontrast"] {
+  --light: #ffffff;
+  --dark: #000000;
+  --highlight: #ff00ff;
+  --bg-color: #999999;
+}
+
+/* Aktualizacja tła body, żeby reagowało na motyw */
+body {
+  background: var(--bg-color);
+  transition: background 0.5s;
 }
 
 body {
@@ -22,6 +53,8 @@ body {
 
 #board {
   display: grid;
+  grid-column: 2; /* Plansza w drugiej kolumnie */
+  grid-row: 1;    /* I w pierwszym wierszu */
   grid-template-columns: repeat(8, var(--field-size));
   grid-template-rows: repeat(8, var(--field-size));
   border: 4px solid #03396c;
@@ -72,4 +105,82 @@ body {
 .piece.black {
   background-color: #333;
   border: 2px solid #000;
+}
+
+#assistant-panel {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: white;
+  padding: 15px 25px;
+  border-radius: 50px; /* Zaokrąglony kształt pigułki */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+  max-width: 90%;
+  width: 500px;
+  border: 2px solid var(--dark);
+}
+
+#assistant-panel .icon svg {
+  width: 32px;
+  height: 32px;
+  stroke: var(--dark);
+  fill: var(--light);
+}
+
+#assistant-panel .text-content {
+  text-align: left;
+}
+
+#assistant-label {
+  display: block;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: #888;
+  font-weight: bold;
+}
+
+#assistant-text {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: var(--dark);
+  min-height: 1.5em; /* Żeby nie skakało jak jest pusto */
+}
+
+/* --- NOWE STYLE DLA WSPÓŁRZĘDNYCH --- */
+.board-wrapper {
+  display: grid;
+  /* Kolumny: Wąski pasek na liczby | Plansza */
+  grid-template-columns: 30px auto; 
+  /* Wiersze: Plansza | Wąski pasek na litery */
+  grid-template-rows: auto 30px;    
+  gap: 5px;
+}
+
+.coords {
+  display: grid;
+  font-weight: bold;
+  color: var(--dark);
+  font-size: 14px;
+}
+
+/* Liczby po lewej (1-8) */
+.coords.nums {
+  grid-column: 1;
+  grid-row: 1;
+  /* Siatka liczb musi pasować do wysokości kratek */
+  grid-template-rows: repeat(8, var(--field-size)); 
+  align-items: center;
+  justify-content: center;
+}
+
+/* Litery na dole (A-H) */
+.coords.letters {
+  grid-column: 2;
+  grid-row: 2;
+  /* Siatka liter musi pasować do szerokości kratek */
+  grid-template-columns: repeat(8, var(--field-size));
+  align-items: center;
+  justify-content: center;
 }
