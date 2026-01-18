@@ -122,6 +122,20 @@ body {
 .piece.white { background: #f0f0f0; border: 2px solid #ccc; }
 .piece.black { background: #333; border: 2px solid #000; }
 
+.piece.king {
+  border: 4px solid gold;
+  position: relative;
+}
+
+.piece.king::after {
+  content: "👑";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+}
+
 .coords div {
   display: flex;
   align-items: center;
