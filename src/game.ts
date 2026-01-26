@@ -1,128 +1,179 @@
+import { createBoard } from "./board.js";
+
 export interface GameState {
   currentPlayer: "white" | "black";
+  isGameOver: boolean;
 }
 
-export const gameState: GameState = {
-  currentPlayer: "white"
+export let gameState: GameState = {
+  currentPlayer: "white",
+  isGameOver: false
 };
 
-// --- POMOCNICZE FUNKCJE MATEMATYCZNE ---
+export function resetGame() {
+    gameState.currentPlayer = "white";
+    gameState.isGameOver = false;
+    createBoard();
+    console.log("Gra zresetowana.");
+}
 
-// Zamienia "A3" na {col: 0, row: 5} (dla tablicy 0-7)
+export interface MoveResult {
+    success: boolean;
+    message?: string;
+    captured?: boolean;
+    winner?: "white" | "black" | null;
+}
+
 function parsePos(pos: string) {
-  const colChar = pos.charAt(0).toUpperCase(); // "A"
-  const rowChar = pos.substring(1);            // "3"
-
-  const col = colChar.charCodeAt(0) - 65;      // A=0, B=1...
-  const row = 8 - parseInt(rowChar);           // 8->0, 1->7
-
-  return { col, row };
+    const colChar = pos.charAt(0).toUpperCase();
+    const rowChar = pos.substring(1);
+    const col = colChar.charCodeAt(0) - 65;
+    const row = 8 - parseInt(rowChar);
+    return { col, row };
 }
 
-// Pobiera kolor pionka na danym polu (lub null, jeśli pusto)
+function getSquare(col: number, row: number): HTMLDivElement | null {
+    const colChar = String.fromCharCode(65 + col);
+    const rowNum = 8 - row;
+    return document.querySelector(`[data-pos="${colChar}${rowNum}"]`) as HTMLDivElement;
+}
+
 function getPieceColor(square: HTMLElement | null): "white" | "black" | null {
-  if (!square) return null;
-  const piece = square.querySelector(".piece");
-  if (!piece) return null;
-  return piece.classList.contains("white") ? "white" : "black";
+    if (!square) return null;
+    const piece = square.querySelector(".piece");
+    if (!piece) return null;
+    return piece.classList.contains("white") ? "white" : "black";
 }
 
-// Sprawdza, czy to Damka (King)
-function isKing(square: HTMLElement): boolean {
-  const piece = square.querySelector(".piece");
-  return piece ? piece.classList.contains("king") : false;
+function getPiecesBetween(start: {col: number, row: number}, end: {col: number, row: number}) {
+    const piecesFound: { square: HTMLDivElement, color: string }[] = [];
+    
+    const dCol = end.col - start.col;
+    const dRow = end.row - start.row;
+    
+    const stepCol = dCol > 0 ? 1 : -1;
+    const stepRow = dRow > 0 ? 1 : -1;
+
+    let currentCol = start.col + stepCol;
+    let currentRow = start.row + stepRow;
+
+    while (currentCol !== end.col && currentRow !== end.row) {
+        const sq = getSquare(currentCol, currentRow);
+        if (sq) {
+            const color = getPieceColor(sq);
+            if (color) {
+                piecesFound.push({ square: sq, color: color });
+            }
+        }
+        currentCol += stepCol;
+        currentRow += stepRow;
+    }
+    return piecesFound;
 }
 
 // --- GŁÓWNA LOGIKA RUCHU ---
+export function executeMove(fromPos: string, toPos: string): MoveResult {
+    if (gameState.isGameOver) return { success: false, message: "Gra skończona. Powiedz 'Nowa gra'." };
 
-export function executeMove(fromPos: string, toPos: string): boolean {
-    const fromSquare = document.querySelector(`[data-pos="${fromPos}"]`) as HTMLDivElement;
-    const toSquare = document.querySelector(`[data-pos="${toPos}"]`) as HTMLDivElement;
-
-    if (!fromSquare || !toSquare) {
-        console.warn("Błąd: Nie znaleziono pól.");
-        return false;
-    }
-    
-    // --- WALIDACJA RUCHU ---
-
-    const piece = fromSquare.querySelector(".piece") as HTMLDivElement;
-    if (!piece) {
-        console.warn("Błąd: Pole startowe jest puste.");
-        return false;
-    }
-
-    const pieceColor = piece.classList.contains("white") ? "white" : "black";
-    if (pieceColor !== gameState.currentPlayer) {
-        console.warn(`Błąd: To nie jest tura gracza ${pieceColor}.`);
-        return false;
-    }
-
-    if (toSquare.children.length > 0) {
-        console.warn("Błąd: Pole docelowe jest zajęte.");
-        return false;
-    }
-
-    // --- RUCH ---
     const start = parsePos(fromPos);
     const end = parsePos(toPos);
+    const fromSquare = getSquare(start.col, start.row);
+    const toSquare = getSquare(end.col, end.row);
 
-    const dCol = end.col - start.col; // Różnica kolumn
-    const dRow = end.row - start.row; // Różnica wierszy
-
-    // Zasada: Ruch musi być po skosie (zmiana wiersza = zmiana kolumny)
-    if (Math.abs(dCol) !== Math.abs(dRow)) {
-        console.warn("Błąd: Ruch nie jest po skosie.");
-        return false;
-    }
-
-    const isSimpleMove = Math.abs(dRow) === 1;
-    const isJump = Math.abs(dRow) === 2;
+    // 1. Podstawowa walidacja pól
+    if (!fromSquare || !toSquare) return { success: false, message: "Nieprawidłowe pola." };
     
-    const pieceIsKing = piece.classList.contains("king");
+    const piece = fromSquare.querySelector(".piece") as HTMLDivElement;
+    if (!piece) return { success: false, message: "Puste pole startowe." };
 
-    if (!pieceIsKing && !isJump) {
-        if (pieceColor === "white" && dRow > 0) return false; // Biały nie może w dół
-        if (pieceColor === "black" && dRow < 0) return false; // Czarny nie może w górę
-    }
+    const pieceColor = piece.classList.contains("white") ? "white" : "black";
+    if (pieceColor !== gameState.currentPlayer) return { success: false, message: `Teraz ruch ma ${gameState.currentPlayer}.` };
 
-    // --- WYKONANIE RUCHU ---
+    if (toSquare.children.length > 0) return { success: false, message: "Pole docelowe zajęte." };
 
-    if (isSimpleMove) {
-        movePieceDom(piece, toSquare);
-        checkPromotion(piece, end.row, pieceColor);
-        endTurn();
-        return true;
-    } 
-    else if (isJump) {
-        // Skok o 2 pola - sprawdzamy bicie
-        const midCol = start.col + (dCol / 2);
-        const midRow = start.row + (dRow / 2);
+    // 2. Walidacja geometrii (musi być skos)
+    const dCol = end.col - start.col;
+    const dRow = end.row - start.row;
+    if (Math.abs(dCol) !== Math.abs(dRow)) return { success: false, message: "Ruch tylko po skosie!" };
 
-        // Odtwarzamy nazwe pola środkowego (np. "B4")
-        const midPosChar = String.fromCharCode(65 + midCol); // 0 -> A
-        const midPosNum = 8 - midRow;                        // 0 -> 8
-        const midPos = midPosChar + midPosNum;
+    const isKing = piece.classList.contains("king");
 
-        const midSquare = document.querySelector(`[data-pos="${midPos}"]`) as HTMLDivElement;
-        const enemyColor = getPieceColor(midSquare);
+    if (!isKing) {
+        const isSimpleMove = Math.abs(dRow) === 1;
+        const isJump = Math.abs(dRow) === 2;
 
-        if (enemyColor && enemyColor !== pieceColor) {
-            const enemyPiece = midSquare.querySelector(".piece");
-            if (enemyPiece) midSquare.removeChild(enemyPiece);
-            
+        // A. Ruch zwykły (1 pole)
+        if (isSimpleMove) {
+            if (pieceColor === "white" && dRow > 0) return { success: false, message: "Pionki tylko do przodu." };
+            if (pieceColor === "black" && dRow < 0) return { success: false, message: "Pionki tylko do przodu." };
+
             movePieceDom(piece, toSquare);
             checkPromotion(piece, end.row, pieceColor);
             endTurn();
-            return true;
-        } else {
-            console.warn("Błąd: Próba skoku bez bicia (puste pole lub własny pion).");
-            return false;
+            return { success: true, message: `Ruch na ${toPos}` };
         }
+        
+        // B. Bicie (2 pola)
+        if (isJump) {
+            const midCol = start.col + (dCol / 2);
+            const midRow = start.row + (dRow / 2);
+            const midSquare = getSquare(midCol, midRow);
+            const enemyColor = getPieceColor(midSquare);
+
+            if (enemyColor && enemyColor !== pieceColor) {
+                // Wykonaj bicie
+                removeEnemyPiece(midSquare!);
+                movePieceDom(piece, toSquare);
+                checkPromotion(piece, end.row, pieceColor);
+                return finalizeMove(true, toPos);
+            } else {
+                return { success: false, message: "Nie możesz skakać bez bicia." };
+            }
+        }
+        
+        return { success: false, message: "Za daleko dla zwykłego piona." };
     }
 
-    console.warn("Błąd: Niedozwolony zasięg ruchu.");
-    return false;
+    else {
+        const obstacles = getPiecesBetween(start, end);
+
+        // Ruch bez bicia (droga musi być pusta)
+        if (obstacles.length === 0) {
+            movePieceDom(piece, toSquare);
+            endTurn();
+            return { success: true, message: `Damka na ${toPos}` };
+        }
+
+        // Bicie damką (dokładnie jeden wróg na drodze)
+        if (obstacles.length === 1) {
+            const obstacle = obstacles[0];
+            
+            if (obstacle.color !== pieceColor) {
+                removeEnemyPiece(obstacle.square);
+                movePieceDom(piece, toSquare);
+                return finalizeMove(true, toPos);
+            } else {
+                return { success: false, message: "Nie możesz przeskoczyć własnego piona." };
+            }
+        }
+
+        return { success: false, message: "Droga zablokowana przez wiele pionków." };
+    }
+}
+
+function removeEnemyPiece(square: HTMLElement) {
+    const enemy = square.querySelector(".piece");
+    if (enemy) square.removeChild(enemy);
+}
+
+function finalizeMove(captured: boolean, toPos: string): MoveResult {
+    const winner = checkWinCondition();
+    if (winner) {
+        gameState.isGameOver = true;
+        return { success: true, message: `Wygrywają ${winner === "white" ? "Białe" : "Czarne"}!`, winner };
+    }
+    endTurn();
+    return { success: true, message: captured ? `Bicie na ${toPos}` : `Ruch na ${toPos}`, captured };
 }
 
 function movePieceDom(piece: HTMLElement, targetSquare: HTMLElement) {
@@ -131,13 +182,21 @@ function movePieceDom(piece: HTMLElement, targetSquare: HTMLElement) {
 
 function endTurn() {
     gameState.currentPlayer = gameState.currentPlayer === "white" ? "black" : "white";
-    console.log(`Tura zmieniona. Teraz: ${gameState.currentPlayer}`);
 }
 
-function checkPromotion(piece: HTMLElement, rowRowIndex: number, color: string) {
-    if ((color === "white" && rowRowIndex === 0) || 
-        (color === "black" && rowRowIndex === 7)) {
+function checkPromotion(piece: HTMLElement, rowIndex: number, color: string) {
+    if (piece.classList.contains("king")) return;
+
+    if ((color === "white" && rowIndex === 0) || (color === "black" && rowIndex === 7)) {
         piece.classList.add("king");
-        console.log("Promocja!");
+        console.log("PROMOCJA! Mamy damkę.");
     }
+}
+
+function checkWinCondition(): "white" | "black" | null {
+    const whitePieces = document.querySelectorAll(".piece.white").length;
+    const blackPieces = document.querySelectorAll(".piece.black").length;
+    if (blackPieces === 0) return "white";
+    if (whitePieces === 0) return "black";
+    return null;
 }

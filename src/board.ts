@@ -3,7 +3,7 @@ const numsElement = document.getElementById("coords-nums") as HTMLDivElement;
 const lettersElement = document.getElementById("coords-letters") as HTMLDivElement;
 const SIZE = 8;
 
-function createBoard(): void {
+export function createBoard(): void {
   boardElement.innerHTML = "";
   numsElement.innerHTML = "";
   lettersElement.innerHTML = "";

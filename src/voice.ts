@@ -1,16 +1,9 @@
-import { executeMove } from "./game.js";
+import { executeMove, gameState, resetGame } from "./game.js";
 import { setTheme } from "./board.js";
-import { gameState } from "./game.js";
 
 const NUMBER_MAP: { [key: string]: string } = {
-    "jeden": "1", "raz": "1",
-    "dwa": "2", 
-    "trzy": "3", 
-    "cztery": "4", 
-    "pięć": "5", 
-    "sześć": "6", 
-    "siedem": "7", 
-    "osiem": "8"
+  "jeden": "1", "raz": "1", "dwa": "2", "trzy": "3", 
+  "cztery": "4", "pięć": "5", "sześć": "6", "siedem": "7", "osiem": "8"
 };
 
 function speak(text: string) {
@@ -18,6 +11,7 @@ function speak(text: string) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "pl-PL";
   utterance.rate = 1.0;
+  
   window.speechSynthesis.speak(utterance);
 
   const assistantText = document.getElementById("assistant-text");
@@ -43,33 +37,34 @@ export function initVoiceControl() {
   startBtn.addEventListener("click", () => {
     output.textContent = "Słucham...";
     const assistantText = document.getElementById("assistant-text");
-    if(assistantText) assistantText.textContent = "👂 Nasłuchuję..."; 
-    
+    if(assistantText) assistantText.textContent = "👂 Nasłuchuję...";
+
     recognition.start();
   });
 
   recognition.onresult = (event: any) => {
     const rawTranscript = event.results[0][0].transcript;
-    const lowerTranscript = rawTranscript.toLowerCase();
+    const lowerTranscript = rawTranscript.toLowerCase().trim();
     
     output.textContent = "Ty: " + rawTranscript;
+    console.log("DEBUG: Usłyszałem:", lowerTranscript);
 
-    const questions = [
-        "czyj ruch", 
-        "kto teraz", 
-        "kto ma ruch", 
-        "czyja kolej", 
-        "czyja tura",
-        "kogo ruch",
-        "kogo tura"
-    ];
+    // 1. RESTART / NOWA GRA
+    if (lowerTranscript.includes("nowa gra") || lowerTranscript.includes("reset") || lowerTranscript.includes("od nowa")) {
+      resetGame();
+      speak("Rozpoczynam nową grę. Powodzenia!");
+      return;
+    }
 
+    // 2. PYTANIE O RUCH
+    const questions = ["czyj ruch", "kto teraz", "czyja kolej", "kogo ruch"];
     if (questions.some(q => lowerTranscript.includes(q))) {
         const player = gameState.currentPlayer === "white" ? "białych" : "czarnych";
         speak(`Teraz jest ruch ${player}.`);
         return;
     }
 
+    // 3. MOTYWY
     if (lowerTranscript.includes("motyw") || lowerTranscript.includes("kolor")) {
         if (lowerTranscript.includes("leśny")) { setTheme("las"); speak("Zmieniam motyw na leśny."); }
         else if (lowerTranscript.includes("ognisty")) { setTheme("ogien"); speak("Włączam motyw ognisty."); }
@@ -78,22 +73,22 @@ export function initVoiceControl() {
         return;
     }
 
-    if (lowerTranscript.includes("zasady")) {
-      speak("Pionki poruszają się o jedno pole po przekątnej. Bicie jest obowiązkowe.");
-      return;
-    }
-
+    // 4. RUCH
     const move = parseMoveCommand(rawTranscript);
     if (move) {
-      const success = executeMove(move.from, move.to);
-      if (success) {
-        speak(`Przesuwam z ${move.from} na ${move.to}.`);
-      } else {
-        speak("Ten ruch jest niemożliwy.");
+      const result = executeMove(move.from, move.to);
+      if (result.message) {
+        speak(result.message);
       }
     } else {
-      speak("Nie zrozumiałam komendy.");
+      console.log("Nie dopasowano komendy ruchu.");
     }
+  };
+  
+  recognition.onerror = (event: any) => {
+    console.error("Błąd rozpoznawania:", event.error);
+    const assistantText = document.getElementById("assistant-text");
+    if(assistantText) assistantText.textContent = "Błąd: " + event.error; 
   };
 }
 
