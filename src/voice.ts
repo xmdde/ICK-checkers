@@ -11,7 +11,7 @@ function speak(text: string) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "pl-PL";
   utterance.rate = 1.0;
-  
+
   window.speechSynthesis.speak(utterance);
 
   const assistantText = document.getElementById("assistant-text");
